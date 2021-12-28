@@ -1,4 +1,5 @@
 import asyncHandler from "express-async-handler";
+import connectDB from "../connection/connectDB.js";
 
 import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
@@ -87,4 +88,34 @@ const updateUserProfile = asyncHandler(async (request, response) => {
   }
 });
 
-export { authUser, signup, getUserProfile, updateUserProfile };
+const deleteUser = asyncHandler(async (request, response) => {
+  connectDB();
+  const user = await User.findById(request.params.id);
+  if (user) {
+    await user.remove();
+    response.json({ message: "User Removed" });
+  } else {
+    response.status(404);
+    throw newError("User not Found");
+  }
+});
+
+const getUsers = asyncHandler(async (request, response) => {
+  try {
+    connectDB();
+    const users = await User.find({}).sort({ name: 1 });
+    response.json(users);
+  } catch (error) {
+    response.json(error.message);
+    process.exit(1);
+  }
+});
+
+export {
+  authUser,
+  signup,
+  getUserProfile,
+  updateUserProfile,
+  getUsers,
+  deleteUser,
+};
